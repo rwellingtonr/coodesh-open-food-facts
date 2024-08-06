@@ -1,0 +1,73 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model ProcessingStatus {
+  id                     String       @id @default(auto()) @map("_id") @db.ObjectId
+  filename               String
+  starting_processing_at DateTime     @default(now())
+  processed_at           DateTime?
+  status                 String
+  error_codes            ErrorCodes[]
+  memory_usage           MemoryUsage?
+
+  @@map("processing_status")
+}
+
+model ErrorCodes {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  code                 Int
+  message              String
+  created_t            Int               @unique @db.Long
+  processing_status    ProcessingStatus? @relation(fields: [processing_status_id], references: [id], onDelete: Cascade)
+  processing_status_id String?           @db.ObjectId
+
+  @@map("error_codes")
+}
+
+model MemoryUsage {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  rss                  String
+  heapTotal            String
+  heapUsed             String
+  external             String
+  processing_status_id String            @unique @db.ObjectId
+  processing_status    ProcessingStatus? @relation(fields: [processing_status_id], references: [id], onDelete: Cascade)
+
+  @@map("memory_usage")
+}
+
+model Product {
+  id               String @id @default(auto()) @map("_id") @db.ObjectId
+  code             Int    @unique @db.Long
+  status           String
+  imported_t       String
+  url              String
+  creator          String
+  created_t        Int    @unique @db.Long
+  last_modified_t  Int    @unique @db.Long
+  product_name     String
+  quantity         String
+  brands           String
+  categories       String
+  labels           String
+  cities           String
+  purchase_places  String
+  stores           String
+  ingredients_text String
+  traces           String
+  serving_size     String
+  serving_quantity Float
+  nutriscore_score Int
+  nutriscore_grade String
+  main_category    String
+  image_url        String
+
+  @@map("product")
+}
