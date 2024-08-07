@@ -3,15 +3,19 @@ import { Cron, CronExpression } from '@nestjs/schedule'
 
 import { SyncProductsUseCase } from '@/application/use-case/sync'
 
+const cronTime = process.env.CRON_TIME || 'EVERY_DAY_AT_11PM'
+
 @Injectable()
 export class SyncProductsJob {
 	private readonly logger = new Logger(SyncProductsJob.name)
 
 	constructor(private readonly syncProductsUseCase: SyncProductsUseCase) {}
 
-	@Cron(CronExpression.EVERY_DAY_AT_11AM)
+	@Cron(CronExpression[cronTime], {
+		name: 'sync-products',
+	})
 	async handle() {
-		this.logger.log('Called when the current second is 45')
+		this.logger.log('Syncing products...')
 		await this.syncProductsUseCase.execute()
 	}
 }
