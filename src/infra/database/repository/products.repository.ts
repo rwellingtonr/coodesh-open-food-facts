@@ -13,7 +13,7 @@ export class ProductsRepository implements AbsProductsRepository {
 	async create(product: Prisma.ProductUncheckedCreateInput): Promise<void> {
 		await this.prisma.product.create({ data: product })
 	}
-	async findUniqueCode(code: number): Promise<Product | null> {
+	async findUniqueCode(code: string): Promise<Product | null> {
 		const found = await this.prisma.product.findUnique({ where: { code } })
 		return found
 	}

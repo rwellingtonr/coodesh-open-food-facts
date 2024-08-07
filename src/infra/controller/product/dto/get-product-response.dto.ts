@@ -3,8 +3,8 @@ import { ApiProperty } from '@nestjs/swagger'
 export class GetProductResponseDto {
 	@ApiProperty({ type: String, example: '12313123901' })
 	id: string
-	@ApiProperty({ type: Number, example: 12313123901 })
-	code: number
+	@ApiProperty({ type: String, example: '12313123901' })
+	code: string
 	@ApiProperty({ type: String, example: 'draft' })
 	status: string
 	@ApiProperty({ type: String, example: '2023-01-01T00:00:00.000Z' })

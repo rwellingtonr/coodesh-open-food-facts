@@ -10,7 +10,7 @@ export class SyncProductsJob {
 	constructor(private readonly syncProductsUseCase: SyncProductsUseCase) {}
 
 	@Cron(CronExpression.EVERY_DAY_AT_11AM)
-	async handleCron() {
+	async handle() {
 		this.logger.log('Called when the current second is 45')
 		await this.syncProductsUseCase.execute()
 	}

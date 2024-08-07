@@ -1,6 +1,6 @@
 import type { Readable } from 'node:stream'
 
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as readline from 'readline'
 import * as zlib from 'zlib'
@@ -18,6 +18,7 @@ import {
 export class SyncProductsUseCase {
 	private readonly challengesBaseUrl: string
 	private readonly maxRowsPerFile: number
+	private logger = new Logger(SyncProductsUseCase.name)
 
 	constructor(
 		private readonly processingStatusRepository: AbsProcessingStatusRepository,
@@ -32,6 +33,7 @@ export class SyncProductsUseCase {
 	}
 
 	async execute() {
+		this.logger.log('Starting sync products')
 		const filesTextResponse = await this.httpGatewayService.get<string>(
 			`${this.challengesBaseUrl}/index.txt`,
 		)
@@ -39,6 +41,7 @@ export class SyncProductsUseCase {
 		const files = filesTextResponse.split('\n').filter(Boolean)
 
 		for (const file of files) {
+			this.logger.log(`Processing file: ${file}`)
 			const initialMemoryUsage = process.memoryUsage()
 
 			const processingStatus = await this.processingStatusRepository.create({
@@ -65,15 +68,18 @@ export class SyncProductsUseCase {
 
 			rl.on('line', async (line) => {
 				if (lineCount < this.maxRowsPerFile) {
+					lineCount++
+
 					const json: JsonRow = JSON.parse(line)
+					const code = json.code.replace(/"/, '')
 					try {
-						const productFound = await this.productsRepository.findUniqueCode(+json.code)
+						const productFound = await this.productsRepository.findUniqueCode(code)
 
 						const dataToUpsert = {
 							url: json.url,
 							creator: json.creator,
-							created_t: +json.created_datetime,
-							last_modified_t: +json.last_modified_datetime,
+							created_t: +json.created_datetime || Date.now(),
+							last_modified_t: +json.last_modified_datetime || Date.now(),
 							status: 'draft',
 							brands: json.brands,
 							categories: json.categories,
@@ -99,26 +105,24 @@ export class SyncProductsUseCase {
 							return
 						}
 
-						await this.productsRepository.create({ ...dataToUpsert, code: +json.code })
-
-						lineCount++
+						await this.productsRepository.create({ ...dataToUpsert, code })
 					} catch (error) {
 						await this.errorsProcessingRepository.create({
-							code: +json.code,
+							code,
 							created_t: Date.now(),
 							message: JSON.stringify(error),
 							processing_status_id: processingStatus.id,
 						})
-						console.error('Erro ao processar linha JSON:', error)
+						console.error('Error to process row JSON:', error)
 					}
 				} else {
 					rl.close()
 				}
-			}).on('close', async () => {
+			}).once('close', async () => {
 				readable.destroy()
 
 				const finalMemoryUsage = process.memoryUsage()
-
+				this.logger.log(`File: ${file} processed`)
 				await Promise.all([
 					this.processingStatusRepository.update(processingStatus.id, {
 						processed_at: new Date().toISOString(),
@@ -135,8 +139,19 @@ export class SyncProductsUseCase {
 			})
 
 			jsonStream.on('error', (err: Error) => {
-				console.error('Erro durante a descompressão ou processamento:', err)
+				this.logger.error('Erro durante a descompressão ou processamento:', err)
+			})
+
+			await new Promise((resolve, reject) => {
+				readable
+					.once('close', () => {
+						this.logger.log(`Processed file ${file} and closing connection stream`)
+						resolve('')
+					})
+					.on('error', reject)
 			})
 		}
+
+		this.logger.log(`Completed sync products`)
 	}
 }

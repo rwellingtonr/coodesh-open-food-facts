@@ -9,7 +9,7 @@ export type FindManyProps = {
 
 export abstract class AbsProductsRepository {
 	abstract create(product: Prisma.ProductUncheckedCreateInput): Promise<void>
-	abstract findUniqueCode(code: number): Promise<Product | null>
+	abstract findUniqueCode(code: string): Promise<Product | null>
 	abstract update(id: string, product: Prisma.ProductUncheckedUpdateInput): Promise<void>
 	abstract findMany(props: FindManyProps): Promise<Paginate<Product>>
 }

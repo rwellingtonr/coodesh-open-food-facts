@@ -4,8 +4,8 @@ import { AbsProductsRepository } from '@/application/repository'
 import type { UpdateProductDto } from '@/infra/controller/product/dto'
 
 type UpdateProductUseCaseProps = {
-	code: number
-	body: UpdateProductDto
+	code: string
+	body: Partial<UpdateProductDto>
 }
 
 @Injectable()
@@ -13,7 +13,7 @@ export class UpdateProductUseCase {
 	constructor(private readonly productsRepository: AbsProductsRepository) {}
 
 	async execute({ code, body }: UpdateProductUseCaseProps) {
-		const product = await this.productsRepository.findUniqueCode(+code)
+		const product = await this.productsRepository.findUniqueCode(code)
 
 		if (!product) {
 			throw new NotFoundException(`Product with code ${code} not found`)

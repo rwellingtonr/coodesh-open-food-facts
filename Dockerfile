@@ -6,12 +6,13 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY --chown=node:node . .
+COPY --chown=node:node .env.example .env
 
 RUN npm i -g pnpm
 
 RUN pnpm i
 
-RUN pnpm prisma generate
+RUN pnpm prisma db push
 
 USER node
 

@@ -22,7 +22,7 @@ model ProcessingStatus {
 
 model ErrorCodes {
   id                   String            @id @default(auto()) @map("_id") @db.ObjectId
-  code                 Int
+  code                 String
   message              String
   created_t            Int               @unique @db.Long
   processing_status    ProcessingStatus? @relation(fields: [processing_status_id], references: [id], onDelete: Cascade)
@@ -44,30 +44,30 @@ model MemoryUsage {
 }
 
 model Product {
-  id               String @id @default(auto()) @map("_id") @db.ObjectId
-  code             Int    @unique @db.Long
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  code             String  @unique
   status           String
   imported_t       String
   url              String
   creator          String
-  created_t        Int    @unique @db.Long
-  last_modified_t  Int    @unique @db.Long
+  created_t        Int     @db.Long
+  last_modified_t  Int     @db.Long
   product_name     String
   quantity         String
   brands           String
   categories       String
-  labels           String
-  cities           String
-  purchase_places  String
-  stores           String
-  ingredients_text String
-  traces           String
-  serving_size     String
-  serving_quantity Float
-  nutriscore_score Int
-  nutriscore_grade String
-  main_category    String
-  image_url        String
+  labels           String?
+  cities           String?
+  purchase_places  String?
+  stores           String?
+  ingredients_text String?
+  traces           String?
+  serving_size     String?
+  serving_quantity Float?
+  nutriscore_score Int?
+  nutriscore_grade String?
+  main_category    String?
+  image_url        String?
 
   @@map("product")
 }

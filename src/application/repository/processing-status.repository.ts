@@ -8,4 +8,6 @@ export abstract class AbsProcessingStatusRepository {
 		id: string,
 		processingStatus: Prisma.ProcessingStatusUncheckedUpdateInput,
 	): Promise<void>
+
+	abstract getLastFilesProcessed(): Promise<ProcessingStatus[]>
 }

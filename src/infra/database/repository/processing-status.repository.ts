@@ -21,4 +21,14 @@ export class ProcessingStatusRepository implements AbsProcessingStatusRepository
 	): Promise<void> {
 		await this.prisma.processingStatus.update({ data: processingStatus, where: { id } })
 	}
+
+	async getLastFilesProcessed(): Promise<ProcessingStatus[]> {
+		const lastFilesProcessed = await this.prisma.processingStatus.findMany({
+			orderBy: {
+				processed_at: 'desc',
+			},
+			distinct: ['filename'],
+		})
+		return lastFilesProcessed
+	}
 }
