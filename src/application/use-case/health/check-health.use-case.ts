@@ -41,8 +41,8 @@ export class CheckHealthUseCase {
 				])
 
 				const processingTime =
-					new Date(fileProcessed.starting_processing_at).getTime() -
-					new Date(fileProcessed.processed_at).getTime()
+					new Date(fileProcessed.processed_at).getTime() -
+					new Date(fileProcessed.starting_processing_at).getTime()
 
 				files.push({
 					filename: fileProcessed.filename,
